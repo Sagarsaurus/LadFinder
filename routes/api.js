@@ -23,7 +23,15 @@ var api = {
         return model.find({}, function(err, coll) {
             return res.send(coll);
         });
+    },
+
+    login : function(req, res) {
+        var model = mongoose.model('User');
+        return model.find({username : req.username, password : req.password}, function(err, coll) {
+            return res.send(coll);
+        });
     }
+
 
 }
 
