@@ -28,14 +28,12 @@ var api = {
     login : function(req, res) {
         var model = mongoose.model('User');
         return model.findOne({'username' : req.body.username, 'password' : req.body.password}, 'username email phone', function(err, coll) {
-            return res.send(req.body);
-            //if(!coll) {
-             //   res.status(500).send({error : "Invalid username and/or password"});
-           // }
-            //else {
-                
-              //  return res.send(coll);
-            //}
+            if(!coll) {
+                res.status(500).send({error : "Invalid username and/or password"});
+            }
+            else {
+                return res.send(coll);
+            }
         });
     }
 
