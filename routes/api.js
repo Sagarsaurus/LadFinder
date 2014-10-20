@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 var mongoose = require('mongoose');
 
-mongoose.model("User", {temp_id : String, username : String, password : String, email : String, phone : String,  created_at : {type: Date, default: Date.now}});
+mongoose.model("User", {temp_id : String, username : String, password : String, email : String, phone : String,  timestamp : String });
 
 var Friends = new mongoose.Schema({friend : String, phone: String, email : String});
 
