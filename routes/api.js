@@ -29,6 +29,7 @@ var api = {
 
 router.post('/createUser', api.createUser);
 router.get('/getAllUsers', api.getAllUsers);
+router.post('/login', api.login);
 
 module.exports = router;
 
