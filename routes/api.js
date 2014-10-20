@@ -27,7 +27,9 @@ var api = {
 
     login : function(req, res) {
         var model = mongoose.model('User');
-        return model.find({username : req.username, password : req.password}, function(err, coll) {
+        console.log(req.body.username);
+        console.log(req.body.password);
+        return model.find({'username' : req.body.username, 'password' : req.body.password}, 'username email phone', function(err, coll) {
             return res.send(coll);
         });
     }
