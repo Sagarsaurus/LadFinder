@@ -57,6 +57,18 @@ var api = {
               return res.send(friendShip);
           }
         });
+    },
+
+    getFriends : function(req, res) {
+        var friendShipModel = mongoose.model("Friendships");
+        return friendShipModel.findOne({'username' : req.params.username}, 'friends', function(err,coll) {
+            if(!coll) {
+                res.status(500).send({error : "Sorry, that user does not have any friendships!"});
+            }
+            else {            
+                return res.send(coll);
+            }
+        });
     }
 }
 
@@ -65,6 +77,7 @@ router.post('/createUser', api.createUser);
 router.get('/getAllUsers', api.getAllUsers);
 router.post('/login', api.login);
 router.post('/addFriend', api.addFriend);
+router.get('/getFriends/:username', api.getFriends);
 
 module.exports = router;
 
