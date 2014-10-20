@@ -23,7 +23,18 @@ var api = {
         return model.find({}, function(err, coll) {
             return res.send(coll);
         });
-    }
+    }, 
+
+    login : function(req, res) {
+        var model = mongoose.model('User');
+        var ret = mondel.find({username : req.username, password : req.password}, function(err, coll) {
+        if(err != null) {
+            res.status(500).send({error: "Invalid username and/or password"});
+        }
+        
+        res.send(coll);
+        }) 
+    });
 
 }
 
