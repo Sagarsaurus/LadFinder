@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 var mongoose = require('mongoose');
 
-mongoose.model("User", {firstName : String, lastName : String, email : String, created_at : {type: Date, default: Date.now}});
+mongoose.model("User", {id : String, username : String,  password : String, email : String, phone : String, time : {type: Date, default: Date.now}});
 
 var api = {
     createUser : function(req, res) {
