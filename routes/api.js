@@ -2,17 +2,14 @@ var express = require('express');
 var router = express.Router();
 var mongoose = require('mongoose');
 
-mongoose.model("User", {temp_id : String, username : String, password : String, email : String, phone : String,  timestamp : String, shared : [Shared], friends : [Friends], locations : [Location] });
 
 mongoose.model("Shared", {userID : String, shareToUserID : String, building : String, floor : String, lat : String, lng : String, timestamp : String});
 
-mongoose.model("Location", {senderId : String, senderUsername : String, lat : String, lng : String, building : String, timestamp : String});
+mongoose.model("Location", {senderID : String, senderUsername : String, lat : String, lng : String, building : String, timestamp : String});
 
-var Friends = new mongoose.Schema({username : String, friendshipStatus: String,});
+mongoose.model("User", {temp_id : String, username : String, password : String, email : String, phone : String,  timestamp : String, shared : [mongoose.model.Shared], pending : [mongoose.model.Friends], friends : [mongoose.model.Friends], locations : [mongoose.model.Location] });
 
-mongoose.model("Friends", Friends);
-
-mongoose.model("Friendships", {username : String, friends : [Friends]});
+mongoose.model("Friends", {_id : String, username : String, friendshipStatus: String});
 
 var api = {
     createUser : function(req, res) {
@@ -89,7 +86,7 @@ var api = {
                  }
                  
                  else {
-                    coll.friends.forEach(function(item) {
+                    coll.pending.forEach(function(item) {
                         if(item.username==req.body.requestedUsername) {
                             found = true;
                         }
@@ -106,8 +103,8 @@ var api = {
                             }
 
                             else {
-                                coll.friends.push({username : req.body.requestedUsername, friendshipStatus : "Pending"});
-                                entity.friends.push({username : coll.username, friendshipStatus : "Pending"});
+                                coll.pending.push({_id : req.body.requestedUsername, username : req.body.requestedUsername, friendshipStatus : "Pending"});
+                                entity.pending.push({_id : coll.username, username : coll.username, friendshipStatus : "Pending"});
                                 coll.save();
                                 entity.save();
                                 res.status(200).send({message: "true"});
@@ -147,9 +144,9 @@ var api = {
 
                     userModel.findOne({'username' : username}, function(err, setFirst) {
                         if(setFirst) {
-                            setFirst.friends.forEach(function(item, index, array) {
+                            setFirst.pending.forEach(function(item, index, array) {
                                 if(item.username==accepted) {
-                                    item.friendshipStatus = "Accepted";
+                                    setFirst.friends.push({username : item.username, friendshipStatus : "Accepted"});
                                     setFirst.markModified('friends');
                                     setFirst.save();
                                 }
@@ -158,9 +155,9 @@ var api = {
 
                        userModel.findOne({'username' : accepted}, function(err, coll) {
                              if(coll) {
-                                coll.friends.forEach(function(item, index, array) {
+                                coll.pending.forEach(function(item, index, array) {
                                     if(item.username==username) {
-                                        item.friendshipStatus="Accepted";
+                                        coll.friends.push({username : item.username, friendshipStatus : "Accepted"});
                                         coll.markModified('friends');
                                         coll.save();
                                         res.status(200).send({message: "true"});
@@ -194,31 +191,43 @@ var api = {
     removeFriendRequest : function(req, res) {
        var userModel = mongoose.model("User");
        var username = null;
-       var accepted = null;
+       var removed = null;
        userModel.findOne({'_id' : req.body.userID}, function(err, coll) {
             if(coll) {
                 username = coll.username;
-                userModel.findOne({'_id' : req.body.acceptedUserID}, function(err, accept) {
-                if(accept) {
-                    accepted = accept.username;
+                userModel.findOne({'_id' : req.body.toRemoveUserID}, function(err, remove) {
+                if(remove) {
+                    removed = remove.username;
                     userModel.findOne({'username' : username}, function(err, setFirst) {
                         if(setFirst) {
-                            setFirst.friends.forEach(function(item, index, array) {
-                                if(item.username==accepted) {
-                                    setFirst.friends.remove({username : accepted});
+                            setFirst.pending.forEach(function(item, index, array) {
+                                if(item.username==removed) {
+                                    userModel.findOneAndUpdate({username : item.username}, {$pull: {pending : {username : removed}}}, function(err, org) {
+                                        console.log(org);
+                                    });
+                                    setFirst.markModified('pending');
+                                    setFirst.save();
+                                    console.log(setFirst.pending);
+
                                 }
                             });
-                            setFirst.markModified('friends');
+                            
+                            setFirst.markModified('pending');
                             setFirst.save();
 
-                       userModel.findOne({'username' : accepted}, function(err, coll) {
+                       userModel.findOne({'username' : removed}, function(err, coll) {
                              if(coll) {
-                                coll.friends.forEach(function(item, index, array) {
+                                coll.pending.forEach(function(item, index, array) {
                                     if(item.username==username) {
-                                        coll.friends.remove({username : username});
-                                   }
+                                    userModel.findOneAndUpdate({username : item.username}, {$pull: {pending : {username : username}}}, function(err, org) {
+                                        console.log(org);
+                                    });
+                                    coll.markModified('pending');
+                                    coll.save();
+                                    console.log(setFirst.pending);
+                                    }   
                                 });
-                                coll.markModified('friends');
+                                coll.markModified('pending');
                                 coll.save();
                                 res.status(200).send({message : "true"});
                             }
@@ -262,7 +271,33 @@ var api = {
     shareLocation : function(req, res) {
        var shareSchema = mongoose.model('Shared');
        toPost = new shareSchema(req.body);
-        
+       var userSchema = mongoose.model('User');
+       userSchema.findOne({'_id' : req.body.userID}, function(err, collection) {
+            if(collection) {
+                userSchema.findOne({'_id' : req.body.shareToUserID}, function(err, coll) {
+                    if(coll) {
+                        coll.friends.forEach(function(item) {
+                            if(item.username == coll.username) {
+                                collection.shared.push(toPost);
+                                coll.locations.push({senderID : req.body.userID, senderUsername : collection.username, lat : req.body.lat, lng : req.body.lng, timestamp : req.body.timestamp});
+                                collection.save();
+                                coll.save();
+                                res.status(200).send({message : "true"});
+                            }
+                            else {
+                                res.status(500).send({error : "Unable to send to that user"});
+                            }
+                        });
+                    }
+                    else {
+                        res.status(500).send({error : "User to share with does not exist"});
+                    }
+                });
+            }
+            else {
+                res.status(500).send({error : "Sending user does not exist"});
+            }
+       });        
     }
 }
 
