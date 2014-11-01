@@ -109,7 +109,7 @@ var api = {
 
     getFriends : function(req, res) {
         var model = mongoose.model("Friendship");
-        return model.find({'userID' : req.params.userID}, 'userID friendshipStatus', function(err,coll) {
+        return model.find({'userID' : req.body.userID}, 'userID friendshipStatus', function(err,coll) {
             if(!coll) {
                 res.status(500).send({error : "Unable to get list of friends"});
             }
@@ -207,7 +207,7 @@ router.post('/createUser', api.createUser);
 router.get('/getAllUsers', api.getAllUsers);
 router.post('/login', api.login);
 router.post('/sendFriendRequest', api.sendFriendRequest);
-router.get('/getFriends/:userID', api.getFriends);
+router.post('/getFriends', api.getFriends);
 router.post('/acceptFriendRequest', api.acceptFriendRequest);
 router.post('/removeFriendRequest', api.removeFriendRequest);
 router.get('/listSharedLocations/:userID', api.listSharedLocations);
