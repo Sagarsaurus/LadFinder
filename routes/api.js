@@ -9,7 +9,7 @@ mongoose.model("Location", {senderID : String, senderUsername : String, lat : St
 
 mongoose.model("User", {temp_id : String, username : String, password : String, email : String, phone : String,  timestamp : String, shared : [mongoose.model.Shared], locations : [mongoose.model.Location] });
 
-mongoose.model("Friendship", {userID : String, requestedID : String, requestedUsername : String, friendshipStatus: String});
+mongoose.model("Friendship", {userID : String, requestedID : String, username : String, friendshipStatus: String});
 
 var api = {
     createUser : function(req, res) {
@@ -108,15 +108,31 @@ var api = {
     },
 
     getFriends : function(req, res) {
+        var userModel = mongoose.model('User');
         var model = mongoose.model("Friendship");
-        return model.find({'requestedID' : req.body.userID}, 'userID requestedUsername friendshipStatus', function(err,coll) {
+        return model.find([{'requestedID' : req.body.userID}, {userID : req.body.userID}], 'userID username friendshipStatus', function(err,coll) {
             if(!coll) {
                 res.status(500).send({error : "Unable to get list of friends"});
             }
-            else {            
-                return res.send(coll);
+            else {
+                coll.forEach(function(item) {
+                    if(item.userID==req.body.userID && item.friendshipStatus==1) {
+                        userModel.findOne({'_id' : item.userID}, function(err, collection) {
+                            item.username = collection.username;
+                        });
+                    }
+
+                    else if(item.requestedID==req.body.userID && friendshipStatus==0) {
+                        userModel.findOne({'_id' : item.requestedID}, function(err, c) {
+                            item.username = c.username;
+                        });
+                    }
+                    item.save();
+                });                
             }
+            res.send(coll);
         });
+
     },
 
     acceptFriendRequest : function(req, res) {
