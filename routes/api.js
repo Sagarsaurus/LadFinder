@@ -117,13 +117,13 @@ var api = {
             else {
                 coll.forEach(function(item) {
                     if(item.userID==req.body.userID && item.friendshipStatus==1) {
-                        userModel.findOne({'_id' : item.userID}, function(err, collection) {
+                        userModel.findOne({'_id' : item.requestedID}, function(err, collection) {
                             item.username = collection.username;
                         });
                     }
 
                     else if(item.requestedID==req.body.userID && friendshipStatus==0) {
-                        userModel.findOne({'_id' : item.requestedID}, function(err, c) {
+                        userModel.findOne({'_id' : item.userID}, function(err, c) {
                             item.username = c.username;
                         });
                     }
