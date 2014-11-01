@@ -109,7 +109,7 @@ var api = {
 
     getFriends : function(req, res) {
         var model = mongoose.model("Friendship");
-        return model.find({'userID' : req.body.userID}, 'userID friendshipStatus', function(err,coll) {
+        return model.find({'userID' : req.body.userID}, 'userID requestedUsername friendshipStatus', function(err,coll) {
             if(!coll) {
                 res.status(500).send({error : "Unable to get list of friends"});
             }
