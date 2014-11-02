@@ -94,7 +94,7 @@ var api = {
                     }
 
                     else {
-                        var friendship = new friendshipModel({userID : req.body.userID, requestedID : id, username : req.body.username, friendshipStatus : 0});
+                        var friendship = new friendshipModel({userID : req.body.userID, requestedID : id, username : "dummyUsername", friendshipStatus : 0});
                         friendship.save();
                         res.send(id);                            
                     }
@@ -110,24 +110,25 @@ var api = {
     getFriends : function(req, res) {
         var userModel = mongoose.model('User');
         var model = mongoose.model("Friendship");
-        return model.find([{'requestedID' : req.body.userID}, {userID : req.body.userID}], 'userID username friendshipStatus', function(err,coll) {
+        return model.find({$or: [{'requestedID' : req.body.userID}, {userID : req.body.userID}]}, 'userID username friendshipStatus', function(err,coll) {
             if(!coll) {
                 res.status(500).send({error : "Unable to get list of friends"});
             }
             else {
-                coll.forEach(function(item) {
+                coll.forEach(function(item, index, array) {
                     if(item.userID==req.body.userID && item.friendshipStatus==1) {
                         userModel.findOne({'_id' : item.requestedID}, function(err, collection) {
-                            item.username = collection.username;
+                            array[index].username = collection.username;
+                            array[index].save();
                         });
                     }
 
                     else if(item.requestedID==req.body.userID && friendshipStatus==0) {
                         userModel.findOne({'_id' : item.userID}, function(err, c) {
-                            item.username = c.username;
+                           array[index].username = c.username;
+                           array[index].save();
                         });
                     }
-                    item.save();
                 });                
             }
             res.send(coll);
