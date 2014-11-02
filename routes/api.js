@@ -116,17 +116,18 @@ var api = {
             }
             else {
                 coll.forEach(function(item, index, array) {
-                    if(item.userID==req.body.userID && item.friendshipStatus==1) {
+                    if(item.userID==req.body.userID && item.friendshipStatus=="1") {
                         userModel.findOne({'_id' : item.requestedID}, function(err, collection) {
                             array[index].username = collection.username;
                             array[index].save();
                         });
                     }
 
-                    else if(item.requestedID==req.body.userID && friendshipStatus==0) {
+                    else if(item.requestedID==req.body.userID && item.friendshipStatus=="0") {
                         userModel.findOne({'_id' : item.userID}, function(err, c) {
                            array[index].username = c.username;
                            array[index].save();
+                           console.log(array[index]);
                         });
                     }
                 });                
