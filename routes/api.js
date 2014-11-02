@@ -94,7 +94,7 @@ var api = {
                     }
 
                     else {
-                        var friendship = new friendshipModel({userID : req.body.userID, requestedID : id, requestedUsername : req.body.requestedUsername, friendshipStatus : 0});
+                        var friendship = new friendshipModel({userID : req.body.userID, requestedID : id, username : req.body.username, friendshipStatus : 0});
                         friendship.save();
                         res.send(id);                            
                     }
