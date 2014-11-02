@@ -110,7 +110,7 @@ var api = {
     getFriends : function(req, res) {
         var userModel = mongoose.model('User');
         var model = mongoose.model("Friendship");
-        return model.find({$or: [{'requestedID' : req.body.userID}, {userID : req.body.userID}]}, 'userID username friendshipStatus', function(err,coll) {
+        return model.find({$or: [{'requestedID' : req.body.userID}, {userID : req.body.userID}]}, 'userID requestedID username friendshipStatus', function(err,coll) {
             if(!coll) {
                 res.status(500).send({error : "Unable to get list of friends"});
             }
@@ -127,7 +127,6 @@ var api = {
                         userModel.findOne({'_id' : item.userID}, function(err, c) {
                            array[index].username = c.username;
                            array[index].save();
-                           console.log(array[index]);
                         });
                     }
                 });                
