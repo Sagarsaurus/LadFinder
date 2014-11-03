@@ -157,19 +157,14 @@ var api = {
 
     removeFriendRequest : function(req, res) {
        var model = mongoose.model('Friendship');
-       model.remove({$or : [{userID : req.body.userID}, {requestedID : req.body.toRemoveUserID}]}, function(err) {
-            if(err) {
-                res.status(500).send({error : "Unable to remove friend request"});
-            }
-            else {
-                res.status(200).send({message : true});
-            }
-       });
+       model.remove({userID : req.body.userID, requestedID : req.body.toRemoveUserID});
+       model.remove({userID : req.body.toRemoveUserID, requestedID : req.body.userID});
+       res.status(200).send({message : true});
     },
 
     listSharedLocations : function(req, res) {
         var model = mongoose.model('User');
-        model.findOne({'_id' : req.params.userID}, function(err, coll) {
+        model.findOne({'_id' : req.body.userID}, function(err, coll) {
             if(coll) {
                 res.send(coll.locations);
             }
@@ -191,7 +186,7 @@ var api = {
                     if(coll) {
                         friendshipSchema.findOne({userID : req.body.userID, requestedID : req.body.shareToUserID}, function(err, friendship) {
                             if(friendship) {
-                                if(friendship.friendshipStatus==1) {
+                                if(friendship.friendshipStatus=="1") {
                                     collection.shared.push(toPost);
                                     coll.locations.push({senderID : req.body.userID, senderUsername : collection.username, lat : req.body.lat, lng : req.body.lng, timestamp : req.body.timestamp});
                                     collection.save();
@@ -227,7 +222,7 @@ router.post('/sendFriendRequest', api.sendFriendRequest);
 router.post('/getFriends', api.getFriends);
 router.post('/acceptFriendRequest', api.acceptFriendRequest);
 router.post('/removeFriendRequest', api.removeFriendRequest);
-router.get('/listSharedLocations/:userID', api.listSharedLocations);
+router.post('/listSharedLocations', api.listSharedLocations);
 router.post('/shareLocation', api.shareLocation);
 
 module.exports = router;
