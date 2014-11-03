@@ -83,6 +83,10 @@ var api = {
           var found = false;
           if(coll) {
                 var id = coll._id;
+                if(id==req.body.userID) {
+                    res.status(500).send({error : "You cannot add yourself as a friend"});
+                }
+                else { 
                 friendshipModel.findOne({'userID' : req.body.userID, 'requestedID' : id}, function(err, collection){
                     if(collection) {
                         if(collection.friendshipStatus == 0) {
@@ -100,11 +104,13 @@ var api = {
                     }
 
                 });
+                }
             }
             else {
                 res.status(500).send({error : "A user with that username does not exist"});
             }
         });  
+        
     },
 
     getFriends : function(req, res) {
@@ -176,7 +182,9 @@ var api = {
         var model = mongoose.model('User');
         model.findOne({'_id' : req.body.userID}, function(err, coll) {
             if(coll) {
-                res.send(coll.locations);
+                var temp = coll.toObject();
+                temp.locations.sort(function(m1, m2) { return m2.timestamp - m1.timestamp; });
+                res.send(temp.locations);
             }
 
             else {
