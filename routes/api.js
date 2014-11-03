@@ -110,11 +110,7 @@ var api = {
     getFriends : function(req, res) {
         var userModel = mongoose.model('User');
         var model = mongoose.model("Friendship");
-        return model.find({$or: [{'requestedID' : req.body.userID}, {'userID' : req.body.userID}]}, 'userID requestedID username friendshipStatus', function(err,coll) {
-            if(!coll) {
-                res.status(500).send({error : "Unable to get list of friends"});
-            }
-            else {
+        model.find({$or: [{'requestedID' : req.body.userID}, {'userID' : req.body.userID}]}, 'userID requestedID username friendshipStatus', function(err,coll) {
                 coll.forEach(function(item, index, array) {
                     if(item.userID==req.body.userID && item.friendshipStatus=="1") {
                         userModel.findOne({'_id' : item.requestedID}, function(err, collection) {
@@ -129,11 +125,19 @@ var api = {
                            array[index].save();
                         });
                     }
-                });                
-            }
-            res.send(coll);
-        });
+                });
+                console.log(coll);
+       });
 
+        return model.find({$or: [{'requestedID' : req.body.userID}, {'userID' : req.body.userID}]}, 'userID requestedID username friendshipStatus', function(err,coll) {
+                if(err) {
+                    res.status(500).send({error : "Unable to find list of friends"});
+                }
+
+                else {
+                    res.send(coll);
+                }
+        });
     },
 
     acceptFriendRequest : function(req, res) {
@@ -192,7 +196,7 @@ var api = {
             if(collection) {
                 userSchema.findOne({'_id' : req.body.shareToUserID}, function(err, coll) {
                     if(coll) {
-                        friendshipSchema.findOne({userID : req.body.userID, requestedID : req.body.shareToUserID}, function(err, friendship) {
+                        friendshipSchema.findOne({$or: [{'userID' : req.body.userID, 'requestedID' : req.body.shareToUserID}, {'userID' : req.body.shareToUserID, 'requestedID' : req.body.userID}]} , function(err, friendship) {
                             if(friendship) {
                                 if(friendship.friendshipStatus=="1") {
                                     collection.shared.push(toPost);
