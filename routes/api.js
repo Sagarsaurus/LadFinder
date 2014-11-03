@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var mongoose = require('mongoose');
+var XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
 
 
 mongoose.model("Shared", {userID : String, shareToUserID : String, building : String, floor : String, lat : String, lng : String, timestamp : String});
@@ -120,17 +121,17 @@ var api = {
     getFriends : function(req, res) {
         var userModel = mongoose.model('User');
         var model = mongoose.model("Friendship");
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.open( "POST", "http://ecco.herokuapp.com/api/getFriends", false );
+        xmlHttp.send( "userID="+req.body.userID );
         return model.find({$or: [{'requestedID' : req.body.userID}, {'userID' : req.body.userID}]}, 'userID requestedID username friendshipStatus', function(err,coll) {
                 if(err) {res.status(500).send({error : "Unable to get list of friends"});}
                 else {
-                var ret;
                 coll.forEach(function(item, index, array) {
                     if(item.userID==req.body.userID && item.friendshipStatus=="1") {
                         userModel.findOne({'_id' : item.requestedID}, function(err, collection) {
                             array[index].username = collection.username;
                             array[index].save();
-                            ret.push(array[index]);
-                            console.log(array[index]);
                         });
                     }
 
@@ -138,13 +139,10 @@ var api = {
                         userModel.findOne({'_id' : item.userID}, function(err, c) {
                            array[index].username = c.username;
                            array[index].save();
-                           ret.push(array[index]);
-                           console.log(array[index]);
                         });
                     }
                 });
-                ret = coll;
-                res.send(ret);
+                res.send(coll);
                 }
        });
 
