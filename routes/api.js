@@ -89,10 +89,10 @@ var api = {
                 else { 
                 friendshipModel.findOne({'userID' : req.body.userID, 'requestedID' : id}, function(err, collection){
                     if(collection) {
-                        if(collection.friendshipStatus == 0) {
+                        if(collection.friendshipStatus == "0") {
                             res.status(500).send({error : "You have already sent that user a friend request"});
                         }
-                        else if(collection.friendshipStatus==1) {
+                        else if(collection.friendshipStatus=="1") {
                             res.status(500).send({error : "You are already friends with that user"});
                         }
                     }
