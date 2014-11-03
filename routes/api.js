@@ -82,7 +82,7 @@ var api = {
        var sender = null;
        userModel.findOne({'_id' : req.body.userID}, function(err, coll) {
             sender=coll.username;
-       }
+       });
        userModel.findOne({'username' : req.body.requestedUsername}, function(err, coll) {
           var found = false;
           if(coll) {
