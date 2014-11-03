@@ -5,7 +5,7 @@ var mongoose = require('mongoose');
 
 mongoose.model("Shared", {userID : String, shareToUserID : String, building : String, floor : String, lat : String, lng : String, timestamp : String});
 
-mongoose.model("Location", {senderID : String, senderUsername : String, lat : String, lng : String, building : String, floor : String, timestamp : String});
+mongoose.model("Location", {senderID : String, senderUsername : String, lat : String, lng : String, building : String, floor : String, timestamp : String, _id : String});
 
 mongoose.model("User", {temp_id : String, username : String, password : String, email : String, phone : String,  timestamp : String, shared : [mongoose.model.Shared], locations : [mongoose.model.Location] });
 
@@ -198,7 +198,7 @@ var api = {
                             if(friendship) {
                                 if(friendship.friendshipStatus=="1") {
                                     collection.shared.push(toPost);
-                                    coll.locations.push({senderID : req.body.userID, senderUsername : collection.username, lat : req.body.lat, lng : req.body.lng, timestamp : req.body.timestamp, building : req.body.building, floor : req.body.floor});
+                                    coll.locations.push({senderID : req.body.userID, senderUsername : collection.username, lat : req.body.lat, lng : req.body.lng, timestamp : req.body.timestamp, building : req.body.building, floor : req.body.floor, _id : toPost._id});
                                     collection.save();
                                     coll.save();
                                     res.status(200).send({message : true});
