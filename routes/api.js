@@ -79,6 +79,10 @@ var api = {
     sendFriendRequest : function(req, res) {
        var friendshipModel = mongoose.model("Friendship");
        var userModel = mongoose.model('User');
+       var sender = null;
+       userModel.findOne({'_id' : req.body.userID}, function(err, coll) {
+            sender=coll.username;
+       }
        userModel.findOne({'username' : req.body.requestedUsername}, function(err, coll) {
           var found = false;
           if(coll) {
@@ -98,7 +102,7 @@ var api = {
                     }
 
                     else {
-                        var friendship = new friendshipModel({userID : req.body.userID, requestedID : id, username : req.body.requestedUsername, friendshipStatus : 0});
+                        var friendship = new friendshipModel({userID : req.body.userID, requestedID : id, username : sender, friendshipStatus : 0});
                         friendship.save();
                         res.send(id);                            
                     }
