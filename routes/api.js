@@ -157,9 +157,17 @@ var api = {
 
     removeFriendRequest : function(req, res) {
        var model = mongoose.model('Friendship');
-       model.remove({userID : req.body.userID, requestedID : req.body.toRemoveUserID});
-       model.remove({userID : req.body.toRemoveUserID, requestedID : req.body.userID});
-       res.status(200).send({message : true});
+//       model.remove({userID : req.body.userID, requestedID : req.body.toRemoveUserID});
+//       model.remove({userID : req.body.toRemoveUserID, requestedID : req.body.userID});
+       model.find({$or : [{'userID' : req.body.userID, 'requestedID' : req.body.toRemoveUserID}, {'userID' : req.body.toRemoveUserID, 'requestedID' : req.body.userID}]}, function(err, coll) {
+                if(!coll) {
+                    res.status(500).send({error : "Unable to remove friend request"});
+                }
+
+                else {
+                    res.status(200).send({message : true});
+                }
+            }).remove().exec();
     },
 
     listSharedLocations : function(req, res) {
