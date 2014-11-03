@@ -102,7 +102,7 @@ var api = {
                     }
 
                     else {
-                        var friendship = new friendshipModel({userID : req.body.userID, requestedID : id, username : sender, friendshipStatus : 0});
+                        var friendship = new friendshipModel({userID : req.body.userID, requestedID : id, username : "dummyUsername", friendshipStatus : 0});
                         friendship.save();
                         res.send(id);                            
                     }
@@ -136,18 +136,34 @@ var api = {
                         });
                     }
                 });
-                console.log(coll);
        });
 
-        return model.find({$or: [{'requestedID' : req.body.userID}, {'userID' : req.body.userID}]}, 'userID requestedID username friendshipStatus', function(err,coll) {
+               return model.find({$or: [{'requestedID' : req.body.userID}, {'userID' : req.body.userID}]}, 'userID requestedID username friendshipStatus', function(err,coll) {
                 if(err) {
-                    res.status(500).send({error : "Unable to find list of friends"});
+                    res.status(500).send({message : "Unable to get list of friends"});
                 }
-
                 else {
-                    res.send(coll);
+                    var temp = coll.toObject();
+                    temp.forEach(function(item, index, array) {
+                        if(item.userID==req.body.userID && item.friendshipStatus=="1") {
+                           userModel.findOne({'_id' : item.requestedID}, function(err, collection) {
+                             array[index].username = collection.username;
+                             array[index].save();
+                         });
+                     }
+
+                        else if(item.requestedID==req.body.userID && item.friendshipStatus=="0") {
+                            userModel.findOne({'_id' : item.userID}, function(err, c) {
+                               array[index].username = c.username;
+                               array[index].save();
+                            });
+                        }
+                    });
+                    res.send(temp);
                 }
-        });
+       });
+
+
     },
 
     acceptFriendRequest : function(req, res) {
