@@ -157,7 +157,7 @@ var api = {
 
     removeFriendRequest : function(req, res) {
        var model = mongoose.model('Friendship');
-       model.remove({userID : req.body.userID, requestedID : req.body.toRemoveUserID}, function(err) {
+       model.remove({$or : [{userID : req.body.userID, requestedID : req.body.toRemoveUserID}]}, function(err) {
             if(err) {
                 res.status(500).send({error : "Unable to remove friend request"});
             }
