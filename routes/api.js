@@ -121,13 +121,6 @@ var api = {
     getFriends : function(req, res) {
         var userModel = mongoose.model('User');
         var model = mongoose.model("Friendship");
-        var xmlHttp = new XMLHttpRequest();
-        var params = "userID="+req.body.userID;        
-xmlHttp.open( "POST", "http://ecco.herokuapp.com/api/getFriends", false );
-xmlHttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-xmlHttp.setRequestHeader("Content-length", params.length);
-xmlHttp.setRequestHeader("Connection", "close");
-        xmlHttp.send( params );
         return model.find({$or: [{'requestedID' : req.body.userID}, {'userID' : req.body.userID}]}, 'userID requestedID username friendshipStatus', function(err,coll) {
                 if(err) {res.status(500).send({error : "Unable to get list of friends"});}
                 else {
