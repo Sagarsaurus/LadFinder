@@ -44,7 +44,7 @@ var api = {
                                         else {
 
                                             return model.find({'username' : req.body.username}, 'username email phone timestamp', function(err,coll) {
-                                                res.send(coll);
+                                                res.status(200).send(coll);
                                             });
                                         }
 
@@ -73,7 +73,7 @@ var api = {
                 res.status(500).send({error : "Invalid username and/or password"});
             }
             else {
-                return res.send(coll);
+                return res.status(200).send(coll);
             }
         });
     },
@@ -105,7 +105,7 @@ var api = {
                     else {
                         var friendship = new friendshipModel({userID : req.body.userID, requestedID : id, username : "dummyUsername", friendshipStatus : 0});
                         friendship.save();
-                        res.send(id);                            
+                        res.status(200).send(id);                            
                     }
 
                 });
@@ -139,7 +139,7 @@ var api = {
                         });
                     }
                 });
-                res.send(coll);
+                res.status(200).send(coll);
                 }
        });
 
@@ -183,7 +183,7 @@ var api = {
             if(coll) {
                 var temp = coll.toObject();
                 temp.locations.sort(function(m1, m2) { return m2.timestamp - m1.timestamp; });
-                res.send(temp.locations);
+                res.status(200).send(temp.locations);
             }
 
             else {
